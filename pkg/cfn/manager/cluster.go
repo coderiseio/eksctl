@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 	"time"
+	"os"
 
 	"github.com/kris-nova/logger"
 	"github.com/pkg/errors"
@@ -23,7 +24,11 @@ func (c *StackCollection) MakeChangeSetName(action string) string {
 }
 
 func (c *StackCollection) makeClusterStackName() string {
-	return "eksctl-" + c.spec.Metadata.Name + "-cluster"
+	name := os.Getenv("CLUSTER_STACK_NAME")
+	if len(name) == 0 {
+		name = c.spec.Metadata.Name
+	}
+	return "eksctl-" + name + "-cluster"
 }
 
 // createClusterTask creates the cluster

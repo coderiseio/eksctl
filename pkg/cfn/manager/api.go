@@ -2,6 +2,7 @@ package manager
 
 import (
 	"fmt"
+	"os"
 	"regexp"
 
 	"github.com/weaveworks/eksctl/pkg/version"
@@ -239,7 +240,12 @@ func (c *StackCollection) ListStacksMatching(nameRegex string, statusFilters ...
 
 // ListStacks gets all of CloudFormation stacks
 func (c *StackCollection) ListStacks(statusFilters ...string) ([]*Stack, error) {
-	return c.ListStacksMatching(fmtStacksRegexForCluster(c.spec.Metadata.Name))
+	name := os.Getenv("CLUSTER_STACK_NAME")
+	fmt.Println("cluster stack from ENV in ListStacks " + name)
+	if len(name) == 0 {
+		name = fmtStacksRegexForCluster(c.spec.Metadata.Name)
+	}
+	return c.ListStacksMatching(name)
 }
 
 // StackStatusIsNotTransitional will return true when stack status is non-transitional
@@ -414,6 +420,7 @@ func (c *StackCollection) errStackNotFound() error {
 // DescribeStacks describes the existing stacks
 func (c *StackCollection) DescribeStacks() ([]*Stack, error) {
 	stacks, err := c.ListStacks()
+	fmt.Println("Stacks:", stacks)
 	if err != nil {
 		return nil, errors.Wrapf(err, "describing CloudFormation stacks for %q", c.spec.Metadata.Name)
 	}
